@@ -15,7 +15,7 @@ case "${1}" in
     mailcatcher "${@:2}"
   ;;
   *)
-    output_error "svn-export: Unknown command. See 'svn-export --help'"
+    echo "svn-export: Unknown command. See 'svn-export --help'"
 
     exit 1
   ;;
