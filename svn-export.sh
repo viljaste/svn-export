@@ -14,13 +14,8 @@ EOF
   exit 1
 fi
 
-case "${1}" in
-  -r)
-    mailcatcher "${@:2}"
-  ;;
-  *)
-    echo "svn-export: Unknown command. See 'svn-export --help'"
+if [ ${#} -eq 0 ]; then
+  echo "svn-export: Unknown command. See 'svn-export --help'"
 
-    exit 1
-  ;;
-esac
+  exit 1
+fi
