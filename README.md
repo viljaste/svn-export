@@ -1,4 +1,4 @@
 svn-export
 ==========
 
-    svn-export R1:R2
+    svn-export REVISION_FROM:REVISION_TO [WORKING_DIR|REPOSITORY_URL] DESTINATION

@@ -33,11 +33,13 @@ output() {
     COLOR=2
   fi
 
-  echo "$(tput setaf ${COLOR})${1}$(tput sgr 0)"
+  echo -e "$(tput setaf ${COLOR})${1}$(tput sgr 0)"
 }
 
 output_error() {
-  >&2 output "${1}" 1
+  local COLOR=1
+
+  >&2 output "${1}" "${COLOR}"
 }
 
 output_debug() {
@@ -46,24 +48,44 @@ output_debug() {
   if [ ${DEBUG} ]; then
     local MESSAGE="${1}"
 
-    echo "${MESSAGE}" > >(log_debug)
-    echo "$(tput setaf "${COLOR}")${MESSAGE}$(tput sgr 0)"
+    echo -e "${MESSAGE}" > >(log_debug)
+    echo -e "$(tput setaf "${COLOR}")${MESSAGE}$(tput sgr 0)"
   fi
 }
 
-if [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
+help() {
   cat << EOF
-svn-export R1:R2
+svn-export: Usage: svn-export <revision_from:revision_to> [working_dir|repository_url] <destination>
+
+svn-export 31337:HEAD exported_files
+svn-export 31337:HEAD /my_project exported_files
+svn-export 31337:HEAD http://my_project exported_files
 EOF
 
   exit 1
+}
+
+if [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
+  help
 fi
 
-if [ "${#}" -eq 0 ]; then
+unknown_command() {
   output_error "svn-export: Unknown command. See 'svn-export --help'"
 
   exit 1
+}
+
+if [ "${#}" -lt 2 ]; then
+  unknown_command
 fi
+
+DESTINATION="${@: -1}"
+
+output_debug "\${DESTINATION}: ${DESTINATION}"
+
+REPOSITORY_URL=""
+
+output_debug "\${REPOSITORY_URL}: ${REPOSITORY_URL}"
 
 WORKING_DIR="$(pwd)"
 
@@ -135,4 +157,4 @@ for LINE in ${DIFF}; do
   cd "${WORKING_DIR}"
 done
 
-echo "${DELETED_FILES}"
+output "${DELETED_FILES}"
