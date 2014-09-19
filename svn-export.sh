@@ -75,60 +75,42 @@ unknown_command() {
   exit 1
 }
 
-if [ "${#}" -lt 2 ]; then
+if [ "${#}" -lt 2 ] || [ "${#}" -gt 3 ]; then
   unknown_command
 fi
 
 DESTINATION="${@: -1}"
 
-output_debug "\${DESTINATION}: ${DESTINATION}"
-
-REPOSITORY_URL=""
-
-output_debug "\${REPOSITORY_URL}: ${REPOSITORY_URL}"
+if [ ! -d "${DESTINATION}" ]; then
+  mkdir -p "${DESTINATION}"
+fi
 
 WORKING_DIR="$(pwd)"
+REPOSITORY_URL="$(pwd)"
 
-output_debug "\${WORKING_DIR}: ${WORKING_DIR}"
+if [ "${#}" -gt 2 ]; then
+  REPOSITORY_URL="${@: -2:1}"
+fi
 
-TMP="$(mktemp -d)"
-
-output_debug "\${TMP}: ${TMP}"
-
-BASE_URL="$(svn info "${WORKING_DIR}" | grep "URL:" | awk '{ print $2 }')"
-
-output_debug "\${BASE_URL}: ${BASE_URL}"
+BASE_URL="$(svn info "${REPOSITORY_URL}" | grep "URL:" | awk '{ print $2 }')"
 
 REVISION_FROM="$(echo "${1}" | cut -d ":" -f1)"
-
-output_debug "\${REVISION_FROM}: ${REVISION_FROM}"
-
 REVISION_TO="$(echo "${1}" | cut -d ":" -f2)"
-
-output_debug "\${REVISION_TO}: ${REVISION_TO}"
 
 DIFF="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${BASE_URL}" | awk '{ print $1 ":" $2 }')"
 
 DELETED_FILES=""
 
 for LINE in ${DIFF}; do
-  output_debug "\${LINE}: ${LINE}"
-
   MODIFIER="$(echo "${LINE}" | cut -d ":" -f1)"
 
-  output_debug "\${MODIFIER}: ${MODIFIER}"
-
   FILE_URL="$(echo "${LINE}" | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
-
-  output_debug "\${FILE_URL}: ${FILE_URL}"
 
   FILE_RELATIVE_PATH="${FILE_URL/${BASE_URL}}"
 
   if [ "${FILE_RELATIVE_PATH:0:1}" == '/' ]; then
     FILE_RELATIVE_PATH="$(echo "${FILE_RELATIVE_PATH}" | cut -c 2-)"
   fi
-
-  output_debug "FILE_RELATIVE_PATH: ${FILE_RELATIVE_PATH}"
 
   if [ "${MODIFIER}" == "D" ]; then
     DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${FILE_RELATIVE_PATH}"
@@ -138,13 +120,9 @@ for LINE in ${DIFF}; do
 
   FILE_RELATIVE_PATH_DIRECTORY="$(dirname "${FILE_RELATIVE_PATH}")"
 
-  output_debug "FILE_RELATIVE_PATH_DIRECTORY: ${FILE_RELATIVE_PATH_DIRECTORY}"
-
   FILENAME="$(basename "${FILE_RELATIVE_PATH}")"
 
-  output_debug "FILENAME: ${FILENAME}"
-
-  cd "${TMP}"
+  cd "${DESTINATION}"
 
   mkdir -p "${FILE_RELATIVE_PATH_DIRECTORY}"
 
