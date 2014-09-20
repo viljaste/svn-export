@@ -64,8 +64,6 @@ if [ ! -d "${TARGET}" ]; then
   mkdir -p "${TARGET}"
 fi
 
-cd "${TARGET}"
-
 REVISION="${1}"
 
 if [ "${#}" -gt 2 ]; then
@@ -75,9 +73,9 @@ fi
 REVISION_FROM="$(echo "${REVISION}" | cut -d ":" -f1)"
 REVISION_TO="$(echo "${REVISION}" | cut -d ":" -f2)"
 
-RESULT="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${REPOSITORY}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
+RESULTS="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${REPOSITORY}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
 
-if [ -z "${RESULT}" ]; then
+if [ -z "${RESULTS}" ]; then
   output "svn-export: No results"
 
   exit 1
@@ -85,12 +83,13 @@ fi
 
 DELETED_FILES=""
 
-for LINE in ${RESULT}; do
+for LINE in ${RESULTS}; do
+  cd "${WORKING_DIR}"
+  cd "${TARGET}"
+
   MODIFIER="$(echo "${LINE}" | cut -d ":" -f1)"
-
-  FILE_URL="$(echo "${LINE}" | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
-
-  FILE_RELATIVE_PATH="${FILE_URL/${REPOSITORY}}"
+  FILE="$(echo "${LINE}" | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
+  FILE_RELATIVE_PATH="${FILE/${REPOSITORY}}"
 
   if [ "${FILE_RELATIVE_PATH:0:1}" == '/' ]; then
     FILE_RELATIVE_PATH="$(echo "${FILE_RELATIVE_PATH}" | cut -c 2-)"
@@ -103,16 +102,19 @@ for LINE in ${RESULT}; do
   fi
 
   FILE_RELATIVE_PATH_DIRECTORY="$(dirname "${FILE_RELATIVE_PATH}")"
-
   FILENAME="$(basename "${FILE_RELATIVE_PATH}")"
 
-  mkdir -p "${FILE_RELATIVE_PATH_DIRECTORY}"
+  if [ ! -d "${FILE_RELATIVE_PATH_DIRECTORY}" ]; then
+    output "svn-export: Creating directory: ${FILE_RELATIVE_PATH_DIRECTORY}"
+
+    mkdir -p "${FILE_RELATIVE_PATH_DIRECTORY}"
+  fi
 
   cd "${FILE_RELATIVE_PATH_DIRECTORY}"
 
   output "svn-export: Exporting file: ${FILE_RELATIVE_PATH}"
 
-  svn export --depth empty -r "${REVISION_TO}" "${FILE_URL}" "${FILENAME}" > /dev/null
+  svn export --depth empty --force -r "${REVISION_TO}" "${FILE}" "${FILENAME}"
 done
 
 output "${DELETED_FILES}"
