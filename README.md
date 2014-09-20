@@ -1,4 +1,4 @@
 svn-export
 ==========
 
-    svn-export <revision_from:revision_to> [working_dir|repository_url] <destination>
+    svn-export [REPOSITORY] <REVISION_FROM:REVISION_TO> <TARGET>

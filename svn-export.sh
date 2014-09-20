@@ -20,12 +20,6 @@ log_error() {
   done
 }
 
-log_debug() {
-  while read DATA; do
-    echo "[$(date +"%D %T")] ${DATA}" | sudo tee -a "${LOG_DEBUG}" > /dev/null
-  done
-}
-
 output() {
   local COLOR="${2}"
 
@@ -42,24 +36,9 @@ output_error() {
   >&2 output "${1}" "${COLOR}"
 }
 
-output_debug() {
-  local COLOR=3
-
-  if [ ${DEBUG} ]; then
-    local MESSAGE="${1}"
-
-    echo -e "${MESSAGE}" > >(log_debug)
-    echo -e "$(tput setaf "${COLOR}")${MESSAGE}$(tput sgr 0)"
-  fi
-}
-
 help() {
   cat << EOF
-svn-export: Usage: svn-export <revision_from:revision_to> [working_dir|repository_url] <destination>
-
-svn-export 31337:HEAD exported_files
-svn-export 31337:HEAD /my_project exported_files
-svn-export 31337:HEAD http://my_project exported_files
+svn-export: Usage: svn-export [REPOSITORY] <REVISION_FROM:REVISION_TO> <TARGET>
 EOF
 
   exit 1
@@ -79,25 +58,46 @@ if [ "${#}" -lt 2 ] || [ "${#}" -gt 3 ]; then
   unknown_command
 fi
 
-DESTINATION="${@: -1}"
+TARGET="${@: -1}"
 
-if [ ! -d "${DESTINATION}" ]; then
-  mkdir -p "${DESTINATION}"
+if [ ! -d "${TARGET}" ]; then
+  output "svn-export: Creating directory: ${TARGET}"
+
+  mkdir -p "${TARGET}"
 fi
 
 WORKING_DIR="$(pwd)"
-REPOSITORY_URL="$(pwd)"
+
+REPOSITORY="${WORKING_DIR}"
 
 if [ "${#}" -gt 2 ]; then
-  REPOSITORY_URL="${@: -2:1}"
+  REPOSITORY="${1}"
 fi
 
-BASE_URL="$(svn info "${REPOSITORY_URL}" | grep "URL:" | awk '{ print $2 }')"
+BASE_URL="$(svn info "${REPOSITORY}" 2> /dev/null | grep "URL:" | awk '{ print $2 }')"
 
-REVISION_FROM="$(echo "${1}" | cut -d ":" -f1)"
-REVISION_TO="$(echo "${1}" | cut -d ":" -f2)"
+if [ -z "${BASE_URL}" ]; then
+  output_error "svn-export: Invalid repository"
 
-DIFF="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${BASE_URL}" | awk '{ print $1 ":" $2 }')"
+  exit 1
+fi
+
+REVISION="${1}"
+
+if [ "${#}" -gt 2 ]; then
+  REVISION="${2}"
+fi
+
+REVISION_FROM="$(echo "${REVISION}" | cut -d ":" -f1)"
+REVISION_TO="$(echo "${REVISION}" | cut -d ":" -f2)"
+
+DIFF="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${BASE_URL}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
+
+if [ -z "${DIFF}" ]; then
+  output "svn-export: No results"
+
+  exit 1
+fi
 
 DELETED_FILES=""
 
@@ -122,7 +122,7 @@ for LINE in ${DIFF}; do
 
   FILENAME="$(basename "${FILE_RELATIVE_PATH}")"
 
-  cd "${DESTINATION}"
+  cd "${TARGET}"
 
   mkdir -p "${FILE_RELATIVE_PATH_DIRECTORY}"
 
