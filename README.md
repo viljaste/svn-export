@@ -1,7 +1,7 @@
 svn-export
 ==========
 
-Exports only modified or newly added files from the SVN repository between two revisions.
+Exports only modified or newly added files between two revisions from the SVN repository.
 
 Usage
 -----
