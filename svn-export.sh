@@ -59,8 +59,6 @@ fi
 TARGET="${@: -1}"
 
 if [ ! -d "${TARGET}" ]; then
-  output "svn-export: Creating directory: ${TARGET}"
-
   mkdir -p "${TARGET}"
 fi
 
@@ -87,36 +85,34 @@ for LINE in ${RESULTS}; do
   cd "${WORKING_DIR}"
   cd "${TARGET}"
 
-  MODIFIER="$(echo "${LINE}" | cut -d ":" -f1)"
   FILE="$(echo "${LINE}" | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
-  FILE_RELATIVE_PATH="${FILE/${REPOSITORY}}"
+  RELATIVE_PATH="${FILE/${REPOSITORY}}"
 
-  if [ "${FILE_RELATIVE_PATH:0:1}" == '/' ]; then
-    FILE_RELATIVE_PATH="$(echo "${FILE_RELATIVE_PATH}" | cut -c 2-)"
+  if [ "${RELATIVE_PATH:0:1}" == '/' ]; then
+    RELATIVE_PATH="$(echo "${RELATIVE_PATH}" | cut -c 2-)"
   fi
 
-  if [ "${MODIFIER}" == "D" ]; then
-    DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${FILE_RELATIVE_PATH}"
+  if [ "$(echo "${LINE}" | cut -d ":" -f1)" == "D" ]; then
+    DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${RELATIVE_PATH}"
 
     continue
   fi
 
-  FILE_RELATIVE_PATH_DIRECTORY="$(dirname "${FILE_RELATIVE_PATH}")"
-  FILENAME="$(basename "${FILE_RELATIVE_PATH}")"
+  DIRECTORY="$(dirname "${RELATIVE_PATH}")"
 
-  if [ ! -d "${FILE_RELATIVE_PATH_DIRECTORY}" ]; then
-    output "svn-export: Creating directory: ${FILE_RELATIVE_PATH_DIRECTORY}"
-
-    mkdir -p "${FILE_RELATIVE_PATH_DIRECTORY}"
+  if [ ! -d "${DIRECTORY}" ]; then
+    mkdir -p "${DIRECTORY}"
   fi
 
-  cd "${FILE_RELATIVE_PATH_DIRECTORY}"
+  cd "${DIRECTORY}"
 
-  output "svn-export: Exporting file: ${FILE_RELATIVE_PATH}"
+  output "svn-export: Exporting file: ${RELATIVE_PATH}"
 
-  svn export --depth empty --force -r "${REVISION_TO}" "${FILE}" "${FILENAME}"
+  svn export --depth empty --force -r "${REVISION_TO}" "${FILE}" "$(basename "${RELATIVE_PATH}")" > /dev/null 2>&1
 done
 
-output "${DELETED_FILES}"
+if [ ! -z "${DELETED_FILES}" ]; then
+  output "${DELETED_FILES}"
+fi
 
 cd "${WORKING_DIR}"
