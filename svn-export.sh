@@ -82,6 +82,12 @@ fi
 DELETED_FILES=""
 
 for LINE in ${RESULTS}; do
+  if [ "$(echo "${LINE}" | cut -d ":" -f1)" == "D" ]; then
+    DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${RELATIVE_PATH}"
+
+    continue
+  fi
+
   cd "${WORKING_DIR}"
   cd "${TARGET}"
 
@@ -90,12 +96,6 @@ for LINE in ${RESULTS}; do
 
   if [ "${RELATIVE_PATH:0:1}" == '/' ]; then
     RELATIVE_PATH="$(echo "${RELATIVE_PATH}" | cut -c 2-)"
-  fi
-
-  if [ "$(echo "${LINE}" | cut -d ":" -f1)" == "D" ]; then
-    DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${RELATIVE_PATH}"
-
-    continue
   fi
 
   DIRECTORY="$(dirname "${RELATIVE_PATH}")"
