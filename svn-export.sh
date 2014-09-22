@@ -47,7 +47,6 @@ REPOSITORY="${WORKING_DIR}"
 if [ "${#}" -gt 2 ]; then
   REPOSITORY="${1}"
 fi
-echo "$REPOSITORY"
 
 REPOSITORY="$(svn info "${REPOSITORY}" 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
 
