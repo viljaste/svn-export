@@ -65,9 +65,11 @@ fi
 
 TARGET="${@: -1}"
 
-if [ ! -d "${TARGET}" ]; then
-  mkdir -p "${TARGET}"
+if [ -d "${TARGET}" ]; then
+  output_error "svn-export: Target directory already exists: ${TARGET}"
 fi
+
+mkdir -p "${TARGET}"
 
 REVISION="${1}"
 
