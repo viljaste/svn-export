@@ -93,6 +93,9 @@ fi
 DELETED_FILES=""
 
 for LINE in ${RESULTS}; do
+  FILE="$(echo "${LINE}" | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
+  RELATIVE_PATH="${FILE/${REPOSITORY}}"
+  
   if [ "$(echo "${LINE}" | cut -d ":" -f1)" == "D" ]; then
     DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${RELATIVE_PATH}"
 
@@ -101,9 +104,6 @@ for LINE in ${RESULTS}; do
 
   cd "${WORKING_DIR}"
   cd "${TARGET}"
-
-  FILE="$(echo "${LINE}" | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
-  RELATIVE_PATH="${FILE/${REPOSITORY}}"
 
   if [ "${RELATIVE_PATH:0:1}" == '/' ]; then
     RELATIVE_PATH="$(echo "${RELATIVE_PATH}" | cut -c 2-)"
