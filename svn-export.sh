@@ -13,6 +13,13 @@ output() {
   echo -e "$(tput setaf ${COLOR})${MESSAGE}$(tput sgr 0)"
 }
 
+output_warning() {
+  local MESSAGE="${1}"
+  local COLOR=3
+
+  output "${MESSAGE}" "${COLOR}"
+}
+
 output_error() {
   local MESSAGE="${1}"
   local COLOR=1
@@ -112,7 +119,7 @@ for LINE in ${RESULTS}; do
 done
 
 if [ ! -z "${DELETED_FILES}" ]; then
-  output "${DELETED_FILES}"
+  output_warning "${DELETED_FILES}"
 fi
 
 cd "${WORKING_DIR}"
