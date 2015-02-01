@@ -30,7 +30,7 @@ if [ "${#}" -gt 2 ]; then
   REPOSITORY="${1}"
 fi
 
-REPOSITORY="$(svn info "${REPOSITORY}" 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
+REPOSITORY="$(svn info ${REPOSITORY} 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
 
 if [ -z "${REPOSITORY}" ]; then
   echo "svn-export: Invalid repository"
@@ -54,8 +54,8 @@ if [ "${#}" -gt 2 ]; then
   REVISION="${2}"
 fi
 
-REVISION_FROM="$(echo "${REVISION}" | cut -d ":" -f1)"
-REVISION_TO="$(echo "${REVISION}" | cut -d ":" -f2)"
+REVISION_FROM="$(echo ${REVISION} | cut -d ':' -f1)"
+REVISION_TO="$(echo ${REVISION} | cut -d ':' -f2)"
 
 RESULTS="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${REPOSITORY}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
 
@@ -68,10 +68,10 @@ fi
 DELETED_FILES=""
 
 for LINE in ${RESULTS}; do
-  FILE="$(echo "${LINE}" | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
+  FILE="$(echo ${LINE} | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
   RELATIVE_PATH="${FILE/${REPOSITORY}}"
 
-  if [ "$(echo "${LINE}" | cut -d ":" -f1)" == "D" ]; then
+  if [ "$(echo ${LINE} | cut -d ':' -f1)" == "D" ]; then
     DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${RELATIVE_PATH}"
 
     continue
@@ -81,10 +81,10 @@ for LINE in ${RESULTS}; do
   cd "${TARGET}"
 
   if [ "${RELATIVE_PATH:0:1}" == "/" ]; then
-    RELATIVE_PATH="$(echo "${RELATIVE_PATH}" | cut -c 2-)"
+    RELATIVE_PATH="$(echo ${RELATIVE_PATH} | cut -c 2-)"
   fi
 
-  DIRECTORY="$(dirname "${RELATIVE_PATH}")"
+  DIRECTORY="$(dirname ${RELATIVE_PATH})"
 
   if [ ! -d "${DIRECTORY}" ]; then
     mkdir -p "${DIRECTORY}"
