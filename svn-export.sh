@@ -4,7 +4,7 @@ WORKING_DIR="$(pwd)"
 
 help() {
   cat << EOF
-svn-export: Usage: svn-export [REPOSITORY] <REVISION_FROM:REVISION_TO> <TARGET>
+svn-export: Usage: svn-export [SOURCE] <REVISION_FROM:REVISION_TO> <DESTINATION>
 EOF
 
   exit 1
@@ -24,29 +24,29 @@ if [ "${#}" -lt 2 ] || [ "${#}" -gt 3 ]; then
   unknown_command
 fi
 
-REPOSITORY="${WORKING_DIR}"
+SOURCE="${WORKING_DIR}"
 
 if [ "${#}" -gt 2 ]; then
-  REPOSITORY="${1}"
+  SOURCE="${1}"
 fi
 
-REPOSITORY="$(svn info ${REPOSITORY} 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
+SOURCE="$(svn info ${SOURCE} 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
 
-if [ -z "${REPOSITORY}" ]; then
+if [ -z "${SOURCE}" ]; then
   echo "svn-export: Invalid repository"
 
   exit 1
 fi
 
-TARGET="${@: -1}"
+DESTINATION="${@: -1}"
 
-if [ -d "${TARGET}" ]; then
-  echo "svn-export: Target directory already exists: ${TARGET}"
+if [ -d "${DESTINATION}" ]; then
+  echo "svn-export: Target directory already exists: ${DESTINATION}"
 
   exit 1
 fi
 
-mkdir -p "${TARGET}"
+mkdir -p "${DESTINATION}"
 
 REVISION="${1}"
 
@@ -57,7 +57,7 @@ fi
 REVISION_FROM="$(echo ${REVISION} | cut -d ':' -f1)"
 REVISION_TO="$(echo ${REVISION} | cut -d ':' -f2)"
 
-RESULTS="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${REPOSITORY}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
+RESULTS="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${SOURCE}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
 
 if [ -z "${RESULTS}" ]; then
   echo "svn-export: No results"
@@ -69,7 +69,7 @@ DELETED_FILES=""
 
 for LINE in ${RESULTS}; do
   FILE="$(echo ${LINE} | awk -F : '{ st = index($0, ":"); print substr($0, st + 1) }')"
-  RELATIVE_PATH="${FILE/${REPOSITORY}}"
+  RELATIVE_PATH="${FILE/${SOURCE}}"
 
   if [ "$(echo ${LINE} | cut -d ':' -f1)" == "D" ]; then
     DELETED_FILES="${DELETED_FILES}\nsvn-export: Deleted file: ${RELATIVE_PATH}"
@@ -78,7 +78,7 @@ for LINE in ${RESULTS}; do
   fi
 
   cd "${WORKING_DIR}"
-  cd "${TARGET}"
+  cd "${DESTINATION}"
 
   if [ "${RELATIVE_PATH:0:1}" == "/" ]; then
     RELATIVE_PATH="$(echo ${RELATIVE_PATH} | cut -c 2-)"

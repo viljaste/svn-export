@@ -4,7 +4,7 @@ Exports only modified or newly added files between two revisions from the SVN re
 
 ## Usage
 
-    svn-export [REPOSITORY] <REVISION_FROM:REVISION_TO> <TARGET>
+    svn-export [SOURCE] <REVISION_FROM:REVISION_TO> <DESTINATION>
 
 ## Install
 
