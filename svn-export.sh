@@ -80,7 +80,7 @@ for LINE in ${RESULTS}; do
   cd "${WORKING_DIR}"
   cd "${TARGET}"
 
-  if [ "${RELATIVE_PATH:0:1}" == '/' ]; then
+  if [ "${RELATIVE_PATH:0:1}" == "/" ]; then
     RELATIVE_PATH="$(echo "${RELATIVE_PATH}" | cut -c 2-)"
   fi
 
