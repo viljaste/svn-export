@@ -13,7 +13,7 @@ Exports only modified or newly added files between two revisions from the SVN re
       && sudo cp "${TMP}/svn-export.sh" /usr/local/bin/svn-export \
       && sudo chmod +x /usr/local/bin/svn-export
 
-## Examples
+## How to use
 
 ### Repository from working directory
 
