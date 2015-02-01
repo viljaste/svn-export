@@ -41,7 +41,7 @@ fi
 DESTINATION="${@: -1}"
 
 if [ -d "${DESTINATION}" ]; then
-  echo "svn-export: Target directory already exists: ${DESTINATION}"
+  echo "svn-export: Destination directory already exists: ${DESTINATION}"
 
   exit 1
 fi
