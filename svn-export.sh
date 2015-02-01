@@ -98,7 +98,7 @@ for LINE in ${RESULTS}; do
 done
 
 if [ ! -z "${DELETED_FILES}" ]; then
-  echo -n "${DELETED_FILES}"
+  echo -e "${DELETED_FILES}"
 fi
 
 cd "${WORKING_DIR}"
