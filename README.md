@@ -25,3 +25,7 @@ Exports only modified or newly added files between two revisions from the SVN re
 ### Repository from URL
 
     svn-export http://repository 26383:27334 ~/exported_files
+
+## License
+
+**MIT**
