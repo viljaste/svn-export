@@ -104,7 +104,7 @@ fi
 REVISION_FROM="$(echo ${REVISION} | cut -d ':' -f1)"
 REVISION_TO="$(echo ${REVISION} | cut -d ':' -f2)"
 
-RESULTS="$(svn ${OPTIONS} --trust-server-cert --non-interactive diff --summarize -r ${REVISION_FROM}:${REVISION_TO} ${SOURCE} 2> /dev/null | awk '{ print $1 ":" $2 }')"
+RESULTS="$(svn ${OPTIONS} --trust-server-cert --non-interactive diff --summarize -r $((REVISION_FROM - 1)):${REVISION_TO} ${SOURCE} 2> /dev/null | awk '{ print $1 ":" $2 }')"
 
 if [ -z "${RESULTS}" ]; then
   echo "svn-export: No results"
