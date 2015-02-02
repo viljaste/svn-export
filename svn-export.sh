@@ -5,6 +5,10 @@ WORKING_DIR="$(pwd)"
 help() {
   cat << EOF
 svn-export: Usage: svn-export [SOURCE] <REVISION_FROM:REVISION_TO> <DESTINATION>
+
+Options:
+  -u, --username=""
+  -p, --password=""
 EOF
 
   exit 1
@@ -20,6 +24,41 @@ unknown_command() {
   exit 1
 }
 
+ARGUMENTS=()
+
+USERNAME=""
+PASSWORD=""
+
+while [ "${1}" != "" ]; do
+  ARGUMENT="${1}"
+
+  shift
+
+  case "${ARGUMENT}" in
+    "-u"|"--username")
+      USERNAME="${1}";
+
+      shift
+      ;;
+    "-p"|"--password")
+      PASSWORD="${1}";
+
+      shift
+      ;;
+    *)
+      ARGUMENTS+=("${ARGUMENT}")
+      ;;
+  esac
+done
+
+OPTIONS=""
+
+if [ -n "${USERNAME}" ] && [ -n "${PASSWORD}" ]; then
+  OPTIONS="--username ${USERNAME} --password ${PASSWORD}"
+fi
+
+set "${ARGUMENTS[@]}"
+
 if [ "${#}" -lt 2 ] || [ "${#}" -gt 3 ]; then
   unknown_command
 fi
@@ -30,7 +69,7 @@ if [ "${#}" -gt 2 ]; then
   SOURCE="${1}"
 fi
 
-SOURCE="$(svn info ${SOURCE} 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
+SOURCE="$(svn ${OPTIONS} info ${SOURCE} 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
 
 if [ -z "${SOURCE}" ]; then
   echo "svn-export: Invalid repository"
@@ -57,7 +96,7 @@ fi
 REVISION_FROM="$(echo ${REVISION} | cut -d ':' -f1)"
 REVISION_TO="$(echo ${REVISION} | cut -d ':' -f2)"
 
-RESULTS="$(svn diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${SOURCE}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
+RESULTS="$(svn ${OPTIONS} diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${SOURCE}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
 
 if [ -z "${RESULTS}" ]; then
   echo "svn-export: No results"
@@ -94,7 +133,7 @@ for LINE in ${RESULTS}; do
 
   echo "svn-export: Exporting file: ${RELATIVE_PATH}"
 
-  svn export --depth empty --force -r "${REVISION_TO}" "${FILE}" "$(basename "${RELATIVE_PATH}")" > /dev/null 2>&1
+  svn "${OPTIONS}" export --depth empty --force -r "${REVISION_TO}" "${FILE}" "$(basename "${RELATIVE_PATH}")" > /dev/null 2>&1
 done
 
 if [ ! -z "${DELETED_FILES}" ]; then

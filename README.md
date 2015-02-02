@@ -5,6 +5,10 @@ Exports only modified or newly added files between two revisions from the SVN re
 ## Usage
 
     svn-export [SOURCE] <REVISION_FROM:REVISION_TO> <DESTINATION>
+    
+    Options:
+      -u, --username=""
+      -p, --password=""
 
 ## Install
 
