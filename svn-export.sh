@@ -2,6 +2,14 @@
 
 WORKING_DIR="$(pwd)"
 
+hash svn 2> /dev/null
+
+if [ "${?}" -ne 0 ]; then
+  echo "svn-export: svn command not found."
+
+  exit 1
+fi
+
 help() {
   cat << EOF
 svn-export: Usage: svn-export [SOURCE] <REVISION_FROM:REVISION_TO> <DESTINATION>
