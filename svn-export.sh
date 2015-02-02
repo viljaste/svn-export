@@ -64,7 +64,7 @@ set "${ARGUMENTS[@]}"
 OPTIONS=""
 
 if [ -n "${USERNAME}" ] && [ -n "${PASSWORD}" ]; then
-  OPTIONS="--no-auth-cache --username ${USERNAME} --password ${PASSWORD}"
+  OPTIONS="--username ${USERNAME} --password ${PASSWORD} --no-auth-cache"
 fi
 
 if [ "${#}" -lt 2 ] || [ "${#}" -gt 3 ]; then
