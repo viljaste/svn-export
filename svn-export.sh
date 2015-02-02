@@ -51,13 +51,13 @@ while [ "${1}" != "" ]; do
   esac
 done
 
+set "${ARGUMENTS[@]}"
+
 OPTIONS=""
 
 if [ -n "${USERNAME}" ] && [ -n "${PASSWORD}" ]; then
   OPTIONS="--username ${USERNAME} --password ${PASSWORD}"
 fi
-
-set "${ARGUMENTS[@]}"
 
 if [ "${#}" -lt 2 ] || [ "${#}" -gt 3 ]; then
   unknown_command
