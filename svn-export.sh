@@ -77,7 +77,7 @@ if [ "${#}" -gt 2 ]; then
   SOURCE="${1}"
 fi
 
-SOURCE="$(svn ${OPTIONS} info ${SOURCE} 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
+SOURCE="$(svn ${OPTIONS} --trust-server-cert --non-interactive info ${SOURCE} 2> /dev/null | grep "^URL:" | awk '{ print $2 }')"
 
 if [ -z "${SOURCE}" ]; then
   echo "svn-export: Invalid repository"
@@ -104,7 +104,7 @@ fi
 REVISION_FROM="$(echo ${REVISION} | cut -d ':' -f1)"
 REVISION_TO="$(echo ${REVISION} | cut -d ':' -f2)"
 
-RESULTS="$(svn ${OPTIONS} diff --summarize -r "${REVISION_FROM}:${REVISION_TO}" "${SOURCE}" 2> /dev/null | awk '{ print $1 ":" $2 }')"
+RESULTS="$(svn ${OPTIONS} --trust-server-cert --non-interactive diff --summarize -r ${REVISION_FROM}:${REVISION_TO} ${SOURCE} 2> /dev/null | awk '{ print $1 ":" $2 }')"
 
 if [ -z "${RESULTS}" ]; then
   echo "svn-export: No results"
@@ -141,7 +141,7 @@ for LINE in ${RESULTS}; do
 
   echo "svn-export: Exporting file: ${RELATIVE_PATH}"
 
-  svn "${OPTIONS}" export --depth empty --force -r "${REVISION_TO}" "${FILE}" "$(basename "${RELATIVE_PATH}")" > /dev/null 2>&1
+  svn ${OPTIONS} --trust-server-cert --non-interactive export --depth empty --force -r "${REVISION_TO}" "${FILE}" "$(basename "${RELATIVE_PATH}")" > /dev/null 2>&1
 done
 
 if [ ! -z "${DELETED_FILES}" ]; then
