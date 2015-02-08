@@ -71,6 +71,20 @@ if [ "${#}" -lt 2 ] || [ "${#}" -gt 3 ]; then
   unknown_command
 fi
 
+DESTINATION="${@: -1}"
+
+if [ -d "${DESTINATION}" ]; then
+  echo "svn-export: Destination directory already exists: ${DESTINATION}"
+
+  exit 1
+fi
+
+mkdir -p "${DESTINATION}"
+
+cd "${DESTINATION}"
+
+DESTINATION="$(pwd)"
+
 SOURCE="${WORKING_DIR}"
 
 if [ "${#}" -gt 2 ]; then
@@ -84,16 +98,6 @@ if [ -z "${SOURCE}" ]; then
 
   exit 1
 fi
-
-DESTINATION="${@: -1}"
-
-if [ -d "${DESTINATION}" ]; then
-  echo "svn-export: Destination directory already exists: ${DESTINATION}"
-
-  exit 1
-fi
-
-mkdir -p "${DESTINATION}"
 
 REVISION="${1}"
 
@@ -111,6 +115,8 @@ if [ -z "${RESULTS}" ]; then
 
   exit 1
 fi
+
+echo "$(svn ${OPTIONS} --trust-server-cert --non-interactive info ${SOURCE} -r ${REVISION_TO} 2> /dev/null | grep ^Revision: | awk '{ print $2 }')" > "${DESTINATION}/REVISION.txt"
 
 DELETED_FILES=""
 
