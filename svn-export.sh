@@ -79,12 +79,6 @@ if [ -d "${DESTINATION}" ]; then
   exit 1
 fi
 
-mkdir -p "${DESTINATION}"
-
-cd "${DESTINATION}"
-
-DESTINATION="$(pwd)"
-
 SOURCE="${WORKING_DIR}"
 
 if [ "${#}" -gt 2 ]; then
@@ -94,7 +88,7 @@ fi
 SOURCE="$(svn ${OPTIONS} --trust-server-cert --non-interactive info ${SOURCE} 2> /dev/null | grep ^URL: | awk '{ print $2 }')"
 
 if [ -z "${SOURCE}" ]; then
-  echo "svn-export: Invalid repository"
+  echo "svn-export: Invalid repository."
 
   exit 1
 fi
@@ -111,10 +105,16 @@ REVISION_TO="$(echo ${REVISION} | cut -d ':' -f2)"
 RESULTS="$(svn ${OPTIONS} --trust-server-cert --non-interactive diff --summarize -r $((REVISION_FROM - 1)):${REVISION_TO} ${SOURCE} 2> /dev/null | awk '{ print $1 ":" $2 }')"
 
 if [ -z "${RESULTS}" ]; then
-  echo "svn-export: No results"
+  echo "svn-export: No results."
 
   exit 1
 fi
+
+mkdir -p "${DESTINATION}"
+
+cd "${DESTINATION}"
+
+DESTINATION="$(pwd)"
 
 echo "$(svn ${OPTIONS} --trust-server-cert --non-interactive info ${SOURCE} -r ${REVISION_TO} 2> /dev/null | grep ^Revision: | awk '{ print $2 }')" > "${DESTINATION}/REVISION.txt"
 
