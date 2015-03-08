@@ -32,34 +32,36 @@ unknown_command() {
   exit 1
 }
 
-ARGUMENTS=()
+if [ "${#}" -ne 0 ]; then
+  ARGUMENTS=()
 
-USERNAME=""
-PASSWORD=""
+  USERNAME=""
+  PASSWORD=""
 
-while [ "${1}" != "" ]; do
-  ARGUMENT="${1}"
+  while [ "${1}" != "" ]; do
+    ARGUMENT="${1}"
 
-  shift
+    shift
 
-  case "${ARGUMENT}" in
-    "-u"|"--username")
-      USERNAME="${1}";
+    case "${ARGUMENT}" in
+      "-u"|"--username")
+        USERNAME="${1}";
 
-      shift
-      ;;
-    "-p"|"--password")
-      PASSWORD="${1}";
+        shift
+        ;;
+      "-p"|"--password")
+        PASSWORD="${1}";
 
-      shift
-      ;;
-    *)
-      ARGUMENTS+=("${ARGUMENT}")
-      ;;
-  esac
-done
+        shift
+        ;;
+      *)
+        ARGUMENTS+=("${ARGUMENT}")
+        ;;
+    esac
+  done
 
-set "${ARGUMENTS[@]}"
+  set "${ARGUMENTS[@]}"
+fi
 
 OPTIONS=""
 
