@@ -79,6 +79,12 @@ if [ -d "${DESTINATION}" ]; then
   exit 1
 fi
 
+mkdir -p "${DESTINATION}"
+
+cd "${DESTINATION}"
+
+DESTINATION="$(pwd)"
+
 SOURCE="${WORKING_DIR}"
 
 if [ "${#}" -gt 2 ]; then
@@ -109,12 +115,6 @@ if [ -z "${RESULTS}" ]; then
 
   exit 1
 fi
-
-mkdir -p "${DESTINATION}"
-
-cd "${DESTINATION}"
-
-DESTINATION="$(pwd)"
 
 echo "$(svn ${OPTIONS} --trust-server-cert --non-interactive info ${SOURCE} -r ${REVISION_TO} 2> /dev/null | grep ^Revision: | awk '{ print $2 }')" > "${DESTINATION}/REVISION.txt"
 
